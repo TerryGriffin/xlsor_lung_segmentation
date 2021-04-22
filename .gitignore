@@ -127,3 +127,17 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# PyCharm
+.idea/
+
+# binary files
+models/*.pth
+libs/src/*.o
+
+# data
+dataset/
+images/
+test_data/
+test_output/
+outputs/
