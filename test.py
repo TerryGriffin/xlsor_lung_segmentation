@@ -25,7 +25,7 @@ from PIL import Image as PILImage
 import torch.nn as nn
 import torch.distributed
 
-USE_CUDA = True
+USE_CUDA = False
 
 IMG_MEAN = np.array((104.00698793,116.66876762,122.67891434), dtype=np.float32)
 NUM_CLASSES = 1
@@ -95,7 +95,7 @@ def process_tree(model, root_dir, out_dir, args):
             process_tree(model, full_path, os.path.join(out_dir, filename), args)
 
 def process_dir(model, image_dir, out_dir, args):
-    testloader = data.DataLoader(XRAYDataTestSet(image_dir, args.data_list, crop_size=(512, 512), mean=IMG_MEAN, scale=False, mirror=False), batch_size=1, shuffle=False, pin_memory=True)
+    testloader = data.DataLoader(XRAYDataTestSet(image_dir, args.data_list, crop_size=(512, 512), mean=IMG_MEAN, scale=False, mirror=False), batch_size=1, shuffle=False, pin_memory=USE_CUDA)
 
     if len(testloader) == 0:
         return
@@ -105,8 +105,9 @@ def process_dir(model, image_dir, out_dir, args):
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
 
+    print(f"Starting {image_dir}")
     for index, batch in enumerate(testloader):
-        if index % 100 == 0:
+        if index > 0 and index % 100 == 0:
             print('%d processed'%(index))
         image, size, name = batch
         if USE_CUDA:
@@ -121,7 +122,7 @@ def process_dir(model, image_dir, out_dir, args):
         output_name = os.path.join(out_dir, os.path.splitext(os.path.basename(name[0]))[0] + "_mask.png")
         output_im.save(output_name, 'png')
 
-
+    print(f"{image_dir} processed {index+1}")
 
 if __name__ == '__main__':
     main()
